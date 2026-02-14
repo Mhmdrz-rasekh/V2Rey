@@ -4,16 +4,17 @@
 set -e
 
 echo ">>> Phase 1: OS Detection and Package Installation"
-if [ -f /etc/os-release ]; then
-    source /etc/os-release
-    if [[ "$ID" == "manjaro" || "$ID" == "arch" ]]; then
-        sudo pacman -Syu --needed --noconfirm python python-pip python-virtualenv wget unzip
-    elif [[ "$ID" == "ubuntu" || "$ID" == "debian" ]]; then
-        sudo apt-get update
-        sudo apt-get install -y python3 python3-venv python3-pip wget unzip
-    else
-        echo "Unsupported OS. Please install Python, wget, and unzip manually."
-    fi
+if command -v apt-get &> /dev/null; then
+    sudo apt-get update
+    sudo apt-get install -y python3 python3-venv python3-pip wget unzip
+elif command -v pacman &> /dev/null; then
+    sudo pacman -Syu --needed --noconfirm python python-pip python-virtualenv wget unzip
+elif command -v dnf &> /dev/null; then
+    sudo dnf install -y python3 python3-pip wget unzip
+elif command -v zypper &> /dev/null; then
+    sudo zypper install -y python3 python3-pip wget unzip
+else
+    echo "Warning: Unsupported package manager. Please ensure python3, venv, wget, and unzip are installed manually."
 fi
 
 echo ">>> Phase 2: Fetching Xray-core Binary"
@@ -38,8 +39,6 @@ chmod +x bin/xray
 echo ">>> Phase 3: Setting up Python Virtual Environment"
 python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
-
-# تغییر کلیدی در این خط اعمال شده است:
 ./venv/bin/pip install PyQt5 "requests[socks]" pysocks
 
 echo ">>> Phase 4: Creating XDG Desktop Entry (App Menu Integration)"
@@ -52,8 +51,8 @@ cat <<EOF > "$DESKTOP_FILE"
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=Xray Linux Client
-Comment=Graphical Proxy Manager for Xray
+Name=Xray Client
+Comment=Graphical Proxy Manager
 Exec=$APP_DIR/run.sh
 Path=$APP_DIR
 Icon=network-vpn
@@ -64,4 +63,4 @@ EOF
 chmod +x "$DESKTOP_FILE"
 chmod +x run.sh
 
-echo ">>> Installation Complete. You can now find 'Xray Linux Client' in your application menu."
+echo ">>> Installation Complete. Launch 'Xray Client' from your application menu."
