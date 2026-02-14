@@ -26,6 +26,6 @@ chmod +x install.sh
 ## Usage
 After installation, you can launch the app directly from your Linux Application Launcher by searching for **Xray Linux Client**. 
 Alternatively, you can run it via terminal:
-\`\`\`bash
+```bash
 ./run.sh
-\`\`\`
+```
