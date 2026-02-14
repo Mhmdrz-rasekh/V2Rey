@@ -15,10 +15,7 @@ class PingDialog(QDialog):
         
         layout.addWidget(QLabel("Select Predefined Target:"))
         self.combo = QComboBox()
-        
-        # --- جادوی رفع سفیدی لیست در لینوکس ---
         self.combo.setItemDelegate(QStyledItemDelegate())
-        
         self.combo.setStyleSheet("""
             QComboBox { background-color: #3c3c3c; color: white; padding: 4px; border: 1px solid #555; }
             QComboBox QAbstractItemView { background-color: #2b2b2b; color: white; selection-background-color: #005f87; }
@@ -56,7 +53,7 @@ class PingDialog(QDialog):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("V2Ray Client")
+        self.setWindowTitle("Xray Client GUI")
         self.resize(700, 750)
         
         central_widget = QWidget()
@@ -83,10 +80,7 @@ class MainWindow(QMainWindow):
         
         self.sub_combo = QComboBox()
         self.sub_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-        
-        # --- جادوی رفع سفیدی لیست در لینوکس ---
         self.sub_combo.setItemDelegate(QStyledItemDelegate())
-        
         self.sub_combo.setStyleSheet("""
             QComboBox { background-color: #3c3c3c; color: white; border: 1px solid #555; padding: 4px; }
             QComboBox QAbstractItemView { background-color: #2b2b2b; color: white; selection-background-color: #005f87; }
