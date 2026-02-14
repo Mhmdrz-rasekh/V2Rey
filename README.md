@@ -16,12 +16,12 @@ A lightweight, concurrent, and thread-safe graphical client for managing V2Ray/X
 ## Installation
 Run the following commands in your terminal. The script will automatically install dependencies, download the latest Xray-core, build a Python virtual environment, and create an app menu shortcut.
 
-\`\`\`bash
-git clone https://github.com/Mhmdrz-rasekh/V2Ray.git
-cd YOUR_REPOSITORY_NAME
+```bash
+git clone https://github.com/Mhmdrz-rasekh/V2Rey.git
+cd V2rey
 chmod +x install.sh
 ./install.sh
-\`\`\`
+```
 
 ## Usage
 After installation, you can launch the app directly from your Linux Application Launcher by searching for **Xray Linux Client**. 
