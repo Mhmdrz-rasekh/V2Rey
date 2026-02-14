@@ -15,7 +15,11 @@ class PingDialog(QDialog):
         
         layout.addWidget(QLabel("Select Predefined Target:"))
         self.combo = QComboBox()
-        self.combo.setStyleSheet("QComboBox { background-color: #3c3c3c; color: white; padding: 4px; }")
+        # اصلاح رنگ درایور بازشونده (QAbstractItemView) در لینوکس
+        self.combo.setStyleSheet("""
+            QComboBox { background-color: #3c3c3c; color: white; padding: 4px; }
+            QComboBox QAbstractItemView { background-color: #2b2b2b; color: white; selection-background-color: #005f87; }
+        """)
         
         self.combo.addItem("Google Connectivity Check", "http://connectivitycheck.gstatic.com/generate_204")
         self.combo.addItem("Google Static 204", "http://www.gstatic.com/generate_204")
@@ -30,11 +34,11 @@ class PingDialog(QDialog):
         layout.addWidget(QLabel("Or Enter Custom URL (Must include http/https):"))
         self.custom_input = QLineEdit()
         self.custom_input.setPlaceholderText("e.g., https://bing.com")
-        self.custom_input.setStyleSheet("QLineEdit { background-color: #3c3c3c; color: white; padding: 4px; }")
+        self.custom_input.setStyleSheet("QLineEdit { background-color: #3c3c3c; color: white; padding: 4px; border: 1px solid #555; }")
         layout.addWidget(self.custom_input)
         
         self.btn_start = QPushButton("🚀 Start Ping")
-        self.btn_start.setStyleSheet("QPushButton { background-color: #005f87; color: white; padding: 6px; font-weight: bold; }")
+        self.btn_start.setStyleSheet("QPushButton { background-color: #005f87; color: white; padding: 6px; font-weight: bold; border-radius: 4px; }")
         self.btn_start.clicked.connect(self.accept)
         layout.addWidget(self.btn_start)
 
@@ -56,7 +60,6 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
         
-        # --- Section 1: Add Subscription ---
         sub_layout = QHBoxLayout()
         self.sub_input = QLineEdit()
         self.sub_input.setPlaceholderText("Enter new subscription link here...")
@@ -65,7 +68,6 @@ class MainWindow(QMainWindow):
         sub_layout.addWidget(self.btn_add_sub)
         main_layout.addLayout(sub_layout)
         
-        # --- Section 2: Subscription Control Card ---
         card_frame = QFrame()
         card_frame.setStyleSheet("""
             QFrame { background-color: #2b2b2b; border-radius: 8px; padding: 10px; margin-top: 10px; } 
@@ -77,16 +79,21 @@ class MainWindow(QMainWindow):
         controls_layout.addWidget(QLabel("Active Sub:"))
         self.sub_combo = QComboBox()
         self.sub_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-        self.sub_combo.setStyleSheet("QComboBox { background-color: #3c3c3c; color: white; border: 1px solid #555; padding: 4px; }")
+        
+        # اصلاح قطعی رنگ پس‌زمینه و متن لیست کشویی
+        self.sub_combo.setStyleSheet("""
+            QComboBox { background-color: #3c3c3c; color: white; border: 1px solid #555; padding: 4px; }
+            QComboBox QAbstractItemView { background-color: #2b2b2b; color: white; selection-background-color: #005f87; }
+        """)
         
         self.btn_update_sub = QPushButton("Update")
-        self.btn_update_sub.setStyleSheet("QPushButton { background-color: #005f87; color: white; padding: 4px 10px; }")
+        self.btn_update_sub.setStyleSheet("QPushButton { background-color: #005f87; color: white; padding: 4px 10px; border-radius: 4px; }")
         
         self.btn_ping_sub = QPushButton("Ping All")
-        self.btn_ping_sub.setStyleSheet("QPushButton { background-color: #2d5a27; color: white; padding: 4px 10px; }")
+        self.btn_ping_sub.setStyleSheet("QPushButton { background-color: #2d5a27; color: white; padding: 4px 10px; border-radius: 4px; }")
         
         self.btn_delete_sub = QPushButton("Delete")
-        self.btn_delete_sub.setStyleSheet("QPushButton { background-color: #8b0000; color: white; padding: 4px 10px; }")
+        self.btn_delete_sub.setStyleSheet("QPushButton { background-color: #8b0000; color: white; padding: 4px 10px; border-radius: 4px; }")
         
         controls_layout.addWidget(self.sub_combo, stretch=1)
         controls_layout.addWidget(self.btn_update_sub)
@@ -104,12 +111,10 @@ class MainWindow(QMainWindow):
         
         main_layout.addWidget(card_frame)
 
-        # --- Section 3: Server List ---
         main_layout.addWidget(QLabel("Servers in active subscription:"))
         self.config_list = QListWidget()
         main_layout.addWidget(self.config_list)
 
-        # --- Section 4: Network Settings & Connection ---
         settings_layout = QHBoxLayout()
         self.port_input = QLineEdit()
         self.port_input.setPlaceholderText("Port (e.g., 10808)")
