@@ -15,6 +15,7 @@ class V2RayCoreManager:
         self.data_file = "subscriptions.json"
         self.xray_process = None
         self.config_path = "xray_temp_config.json"
+        self.is_windows = (os.name == 'nt')
         self.load_configs()
 
     def load_configs(self):
@@ -173,11 +174,15 @@ class V2RayCoreManager:
     def start_connection(self, config_data: dict, socks_port: int):
         self.stop_connection()
         self.generate_xray_config(config_data, socks_port)
+        
+        binary_name = "xray.exe" if self.is_windows else "xray"
+        flags = subprocess.CREATE_NO_WINDOW if self.is_windows else 0
+        
         try:
-            self.xray_process = subprocess.Popen(["xray", "run", "-c", self.config_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            self.xray_process = subprocess.Popen([binary_name, "run", "-c", self.config_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags)
             time.sleep(1.5)
             if self.xray_process.poll() is not None: raise RuntimeError("Core terminated.")
-        except FileNotFoundError: raise FileNotFoundError("xray binary not found.")
+        except FileNotFoundError: raise FileNotFoundError(f"{binary_name} binary not found in PATH.")
 
     def stop_connection(self):
         if self.xray_process:
@@ -190,15 +195,15 @@ class V2RayCoreManager:
         try: self.generate_xray_config(config_data, test_port, output_path=temp_config_path)
         except Exception: raise RuntimeError("Config Error")
         
-        temp_process = subprocess.Popen(["xray", "run", "-c", temp_config_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        binary_name = "xray.exe" if self.is_windows else "xray"
+        flags = subprocess.CREATE_NO_WINDOW if self.is_windows else 0
+        
+        temp_process = subprocess.Popen([binary_name, "run", "-c", temp_config_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags)
         try:
-            # زمان خواب افزایش پیدا کرد تا هسته برای اتصال فرصت کافی داشته باشد
             time.sleep(2.5) 
             if temp_process.poll() is not None: raise RuntimeError("Core died")
             proxies = {"http": f"socks5h://127.0.0.1:{test_port}", "https": f"socks5h://127.0.0.1:{test_port}"}
             start_time = time.time()
-            
-            # تایم اوت اتصال افزایش پیدا کرد
             requests.get(ping_url, proxies=proxies, timeout=7)
             return time.time() - start_time
         except Exception: raise RuntimeError("Timeout")
@@ -208,13 +213,35 @@ class V2RayCoreManager:
             if os.path.exists(temp_config_path): os.remove(temp_config_path)
 
     def set_system_proxy(self, enable: bool, socks_port: int = 10808):
-        desktop_env = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
         http_port = socks_port + 1
-        if "gnome" in desktop_env:
-            if enable:
-                os.system(f'gsettings set org.gnome.system.proxy mode "manual" && gsettings set org.gnome.system.proxy.socks host "127.0.0.1" && gsettings set org.gnome.system.proxy.socks port {socks_port} && gsettings set org.gnome.system.proxy.http host "127.0.0.1" && gsettings set org.gnome.system.proxy.http port {http_port} && gsettings set org.gnome.system.proxy.https host "127.0.0.1" && gsettings set org.gnome.system.proxy.https port {http_port} && gsettings set org.gnome.system.proxy.ftp host "127.0.0.1" && gsettings set org.gnome.system.proxy.ftp port {http_port}')
-            else: os.system('gsettings set org.gnome.system.proxy mode "none"')
-        elif "kde" in desktop_env:
-            if enable: os.system(f'kwriteconfig5 --file kioslaverc --group "Proxy Settings" --key ProxyType 1 && kwriteconfig5 --file kioslaverc --group "Proxy Settings" --key socksProxy "socks://127.0.0.1:{socks_port}" && kwriteconfig5 --file kioslaverc --group "Proxy Settings" --key httpProxy "http://127.0.0.1:{http_port}" && kwriteconfig5 --file kioslaverc --group "Proxy Settings" --key httpsProxy "http://127.0.0.1:{http_port}"')
-            else: os.system('kwriteconfig5 --file kioslaverc --group "Proxy Settings" --key ProxyType 0')
-            os.system('qdbus org.kde.kded5 /kded org.kde.kded5.reconfigure "proxy"')
+        
+        if self.is_windows:
+            import winreg
+            import ctypes
+            try:
+                internet_settings = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Internet Settings', 0, winreg.KEY_ALL_ACCESS)
+                if enable:
+                    proxy_server = f"127.0.0.1:{http_port}"
+                    winreg.SetValueEx(internet_settings, 'ProxyEnable', 0, winreg.REG_DWORD, 1)
+                    winreg.SetValueEx(internet_settings, 'ProxyServer', 0, winreg.REG_SZ, proxy_server)
+                    winreg.SetValueEx(internet_settings, 'ProxyOverride', 0, winreg.REG_SZ, "<local>")
+                else:
+                    winreg.SetValueEx(internet_settings, 'ProxyEnable', 0, winreg.REG_DWORD, 0)
+                winreg.CloseKey(internet_settings)
+                
+                internet_set_option = ctypes.windll.wininet.InternetSetOptionW
+                internet_set_option(0, 39, 0, 0)
+                internet_set_option(0, 37, 0, 0)
+            except Exception as e:
+                raise RuntimeError(f"Windows Registry Error: {e}")
+                
+        else:
+            desktop_env = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
+            if "gnome" in desktop_env:
+                if enable:
+                    os.system(f'gsettings set org.gnome.system.proxy mode "manual" && gsettings set org.gnome.system.proxy.socks host "127.0.0.1" && gsettings set org.gnome.system.proxy.socks port {socks_port} && gsettings set org.gnome.system.proxy.http host "127.0.0.1" && gsettings set org.gnome.system.proxy.http port {http_port} && gsettings set org.gnome.system.proxy.https host "127.0.0.1" && gsettings set org.gnome.system.proxy.https port {http_port} && gsettings set org.gnome.system.proxy.ftp host "127.0.0.1" && gsettings set org.gnome.system.proxy.ftp port {http_port}')
+                else: os.system('gsettings set org.gnome.system.proxy mode "none"')
+            elif "kde" in desktop_env:
+                if enable: os.system(f'kwriteconfig5 --file kioslaverc --group "Proxy Settings" --key ProxyType 1 && kwriteconfig5 --file kioslaverc --group "Proxy Settings" --key socksProxy "socks://127.0.0.1:{socks_port}" && kwriteconfig5 --file kioslaverc --group "Proxy Settings" --key httpProxy "http://127.0.0.1:{http_port}" && kwriteconfig5 --file kioslaverc --group "Proxy Settings" --key httpsProxy "http://127.0.0.1:{http_port}"')
+                else: os.system('kwriteconfig5 --file kioslaverc --group "Proxy Settings" --key ProxyType 0')
+                os.system('qdbus org.kde.kded5 /kded org.kde.kded5.reconfigure "proxy"')
