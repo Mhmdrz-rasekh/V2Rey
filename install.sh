@@ -38,7 +38,9 @@ chmod +x bin/xray
 echo ">>> Phase 3: Setting up Python Virtual Environment"
 python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
-./venv/bin/pip install PyQt5 requests
+
+# تغییر کلیدی در این خط اعمال شده است:
+./venv/bin/pip install PyQt5 "requests[socks]" pysocks
 
 echo ">>> Phase 4: Creating XDG Desktop Entry (App Menu Integration)"
 APP_DIR=$(pwd)
