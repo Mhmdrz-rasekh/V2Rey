@@ -69,7 +69,8 @@ class BatchPingThread(QThread):
         self.target_url = target_url
 
     def run(self):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        # کاهش تعداد ورکرها برای جلوگیری از خفگی CPU در لینوکس و کاهش تایم‌اوت‌های کاذب
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
             futures_map = {}
             for original_index, config_data in self.target_configs:
                 if config_data.get("protocol") not in ["vmess", "vless"]:
