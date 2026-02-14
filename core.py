@@ -174,7 +174,6 @@ class V2RayCoreManager:
         self.stop_connection()
         self.generate_xray_config(config_data, socks_port)
         try:
-            # اینجا کلمه به xray تغییر پیدا کرد
             self.xray_process = subprocess.Popen(["xray", "run", "-c", self.config_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             time.sleep(1.5)
             if self.xray_process.poll() is not None: raise RuntimeError("Core terminated.")
@@ -191,14 +190,16 @@ class V2RayCoreManager:
         try: self.generate_xray_config(config_data, test_port, output_path=temp_config_path)
         except Exception: raise RuntimeError("Config Error")
         
-        # اینجا کلمه به xray تغییر پیدا کرد
         temp_process = subprocess.Popen(["xray", "run", "-c", temp_config_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         try:
-            time.sleep(1.5)
+            # زمان خواب افزایش پیدا کرد تا هسته برای اتصال فرصت کافی داشته باشد
+            time.sleep(2.5) 
             if temp_process.poll() is not None: raise RuntimeError("Core died")
             proxies = {"http": f"socks5h://127.0.0.1:{test_port}", "https": f"socks5h://127.0.0.1:{test_port}"}
             start_time = time.time()
-            requests.get(ping_url, proxies=proxies, timeout=5)
+            
+            # تایم اوت اتصال افزایش پیدا کرد
+            requests.get(ping_url, proxies=proxies, timeout=7)
             return time.time() - start_time
         except Exception: raise RuntimeError("Timeout")
         finally:
