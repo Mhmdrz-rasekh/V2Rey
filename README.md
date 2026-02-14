@@ -1,31 +1,33 @@
-# Xray Linux Client
+# Xray Cross-Platform GUI Client
 
-A lightweight, concurrent, and thread-safe graphical client for managing V2Ray/Xray subscriptions on Linux (Manjaro/Ubuntu).
+A lightweight, concurrent, and thread-safe graphical interface for managing V2Ray/Xray subscriptions. Designed for seamless operation on both Linux distributions and Windows.
 
 ## Features
-- **Concurrent Ping Test:** Ping all servers simultaneously using a thread pool.
-- **System Proxy Integration:** Automatically configures SOCKS, HTTP, and FTP proxy settings for GNOME and KDE Plasma.
-- **Smart Subscription Parsing:** Decodes dummy nodes and extracts subscription data (Upload, Download, Expiry) accurately.
-- **Dual Inbounds:** Binds separate ports for SOCKS and HTTP to prevent protocol mismatch errors in Linux utilities.
-- **Self-Contained Execution:** Downloads its own Xray-core binary without requiring root privileges for system-wide installation.
-
-## Prerequisites
-- `wget` and `unzip`
-- `python3`
+* **Cross-Platform Compatibility:** Native execution on Linux (GNOME/KDE Plasma) and Windows systems.
+* **Concurrent Ping Test:** Asynchronous batch latency testing via thread pooling, preventing GUI freezes.
+* **Smart Subscription Parsing:** Auto-decodes customized "Dummy Nodes" to extract metadata (Data Usage & Expiry) and translates localized metrics.
+* **Automated System Proxy:** Direct API interaction with Windows Registry, `gsettings`, and `kwriteconfig5` for global routing without requiring administrative privileges.
+* **Dual-Inbound Routing:** Segregates SOCKS and HTTP traffic to prevent protocol mismatch errors in CLI utilities.
 
 ## Installation
-Run the following commands in your terminal. The script will automatically install dependencies, download the latest Xray-core, build a Python virtual environment, and create an app menu shortcut.
 
+### Linux (Ubuntu, Debian, Arch, Fedora, openSUSE)
+Open your terminal and run:
 ```bash
-git clone https://github.com/Mhmdrz-rasekh/V2Rey.git
-cd V2rey
+git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git
+cd YOUR_REPOSITORY_NAME
 chmod +x install.sh
 ./install.sh
 ```
+*An application shortcut will be added to your OS Application Menu.*
 
-## Usage
-After installation, you can launch the app directly from your Linux Application Launcher by searching for **Xray Linux Client**. 
-Alternatively, you can run it via terminal:
-```bash
-./run.sh
-```
+### Windows
+1. Clone or download the repository as a ZIP file.
+2. Ensure you have [Python](https://www.python.org/downloads/) installed (check "Add python.exe to PATH" during installation).
+3. Double-click the `install.bat` file.
+4. *A shortcut will be automatically created on your Desktop.*
+
+## Project Structure
+* `core.py`: Manages OS interactions, Xray-core binary execution, and HTTP parsing.
+* `ui.py`: Contains the PyQt5 interface structure and dialog models.
+* `main.py`: The application controller handling state and thread concurrence.
